@@ -3,7 +3,7 @@ name = "pycrofluidics"
 version = "0.1.0"
 description = "Control Elveflow microfluidic components using (relatively) simple Python bindings"
 authors = ["Piet J.M. Swinkels"]
-readme = "README.md"
+readme = "readme.md"
 repository = "https://github.com/WetenSchaap/pycrofluidics"
 
 [tool.poetry.dependencies]
