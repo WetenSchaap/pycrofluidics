@@ -70,10 +70,10 @@ Please be aware that you *cannot* use this module directly after installation, y
    - 64-bit drivers: ``SDK_V[version nr]/Extra Install For x64 Libraries/setup.exe``
    - FTDI drivers: found in install folder of ESI: ``C:\Program Files(x86)\Elvesys\driver`` (look for ``driver_MUX_distAndBFS.exe``)
 5. Now you need to find out the name of the Elveflow devices you are using. Do this using the National Instruments Measurement and Automation Explorer ("NI MAX") software. The NI MAX Software should be automatically installed with Elveflow Smart Interface.
-   1. Plug in and turn on all of your devices. Do **not** start the ESI software to control them
+   1. Turn on all of your devices. Don **not** plug in your devices yet. Do **not** start the ESI software to control them.
    2. Open the NI MAX software
-   3. Expand the menu with "devices and interfaces" on the left side. You see a list of all devices. They should be things like ``ASRL3::INSTR`` (ignore ``COM3`` immediately after it). Write all devices down
-   4. Unplug your Elveflow device and refresh the device and interfaces list (``F5``). The name that disappeared is your device. Do this for all your devices. Keep track of which devices has which name.
+   3. Expand the menu with "devices and interfaces" on the left side. You see a list of all devices. There should be things like ``ASRL3::INSTR`` (ignore ``COM3`` immediately after it). Write all devices down
+   4. Plug in your Elveflow device and refresh the device and interfaces list (``F5``). The name that sappeared is your device. Do this for all your devices. Keep track of which device has which name.
 6. Install this module now, using ``pip install pycrofluidics`` (or using ``poetry``, or something else)
 7. Now, you need to tell pycrofluidics where to look for the SDK and dll files you downloaded before, and the name of your devices. You do this by creating and editing a configuration file. To create the file, run from the terminal:
 
@@ -98,3 +98,14 @@ Set ``elveflow_sdk`` to the path to the Python SDK you've downloaded, presumably
 Replace ``[DEVICE]_name`` with the device names you discovered earlier. If you do not have a device which is in the list (e.g., the mux distributor), just leave it as it is.
 
 Now you are ready to use this module!
+
+
+## FAQ
+
+> I keep getting error "-8007" (ESI software seems to have connection with Device, close ESI before continuing in Python), but the ESI software is not open. What is going wrong?
+
+Probably, your device name changed. This happens when you plug the device into a different USB port, and sometimes just randomly. Change the name of the device in the config file (you can see its location by running ``pycrofluidics.where_is_the_config_file()``). If this keeps happening, you can also supply the device name directly to the objects, e.g. ``pycrofluidics.Pelve(deviceName="ASRL3::INSTR")`` to override the default. So you don't have to keep changing the default values.
+
+> I have more than one of the same device. Can I still use this code
+
+Yes. You should supply the correct device name when creating the connection (e.g. ``pycrofluidics.Pelve(deviceName="ASRL3::INSTR")``) instead of relying on the config file. It should *just work*™ that way.
