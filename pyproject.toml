@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "pycrofluidics"
+version = "0.1.0"
+description = "Control Elveflow microfluidic components using (relatively) simple Python bindings"
+authors = ["WetenSchaap <git@swnkls.nl>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pandas = "^2.2.1"
+numpy = "^1.26.4"
+platformdirs = "^4.2.0"
+ruamel-yaml = "^0.18.6"
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+pycrofluidics_create_config = "critiqypy.post_install:main"
