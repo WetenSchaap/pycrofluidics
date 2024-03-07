@@ -20,4 +20,4 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-pycrofluidics_create_config = "critiqypy.post_install:main"
+pycrofluidics_create_config = "pycrofluidics.post_install:main"
