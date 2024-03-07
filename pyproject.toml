@@ -2,8 +2,9 @@
 name = "pycrofluidics"
 version = "0.1.0"
 description = "Control Elveflow microfluidic components using (relatively) simple Python bindings"
-authors = ["WetenSchaap <git@swnkls.nl>"]
+authors = ["Piet J.M. Swinkels"]
 readme = "README.md"
+repository = "https://github.com/WetenSchaap/pycrofluidics"
 
 [tool.poetry.dependencies]
 python = "^3.10"
