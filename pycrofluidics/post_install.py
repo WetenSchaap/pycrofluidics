@@ -1,4 +1,3 @@
-import pycrofluidics
 import pycrofluidics.common as common
 import pathlib
 import platformdirs
@@ -17,7 +16,7 @@ def main():
             'elveflow_sdk': "/path/to/the/elveflow/sdk",
             'ob1_name' : "ASRL3::INSTR",
             'mux_name' : "ASRL4::INSTR",
-            'ob1_callibration' : basepath / "ob1_pressurechannel.callibration",
+            'ob1_callibration' : (basepath / "ob1_pressurechannel.callibration").as_posix(),
         },
         configfile
     )

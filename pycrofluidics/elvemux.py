@@ -24,12 +24,12 @@ class MUXelve:
         deviceName : str, optional
             Check readme on how to get this, requires external software (NI MAX). Defaults to whatever is set in the config file.
         """
-        if type(deviceName) != str:
-            raise TypeError("deviceName should be supplied as str")
+        if type(deviceName) != str and deviceName != None:
+            raise TypeError("deviceName should be supplied as string or left at default")
         if any( [elveflowDLL!=None, elveflowSDK!= None] ):
             if ( not pathlib.Path(elveflowDLL).exists() ) or ( not pathlib.Path(elveflowSDK).exists() ):
                 raise FileNotFoundError("I could not find the given paths to the Elveflow DLL and/or Python SDK")
-        self.deviceSerialNumber = deviceName
+        self.deviceName = deviceName
         self.ELVEFLOW_DLL = elveflowDLL
         self.ELVEFLOW_SDK = elveflowSDK
         self.loadDLL()
@@ -45,9 +45,11 @@ class MUXelve:
         verbose : bool, optional
             Whether to talk about things. Defaults False
         """
+        if self.deviceName == None:
+            self.deviceName = common.read_config("mux_name")
         self.Instr_ID = c_int32()
         error = self.ef.MUX_DRI_Initialization(
-            self.deviceSerialNumber.encode('ascii'),
+            self.deviceName.encode('ascii'),
             byref(self.Instr_ID)
         )
         common.raiseEFerror(error,'Initialize connection to MUX distributor')

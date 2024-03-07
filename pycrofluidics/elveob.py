@@ -73,7 +73,11 @@ class Pelve:
         Close connection with Elveflow device
         """
         if self.insideRemote:
-            self.stopRemote() # Gracefully shut down, also if there is a control loop running.
+            try:
+                self.stopRemote() # Gracefully shut down, also if there is a control loop running.
+            except ConnectionError as e:
+                # If not gracefull, force the issue
+                print('Remote process could not be stopped ({e}), but closing connection anyway.')
         error = self.ef.OB1_Destructor(self.Instr_ID)
         common.raiseEFerror(error,'Closing connection to OB1')
 
@@ -128,7 +132,7 @@ class Pelve:
         common.raiseEFerror(error,'Performing callibration')
         # first backup old callibration if it exists, before overwriting with new data!
         if pathlib.Path(path).exists():
-            oldCal = pathlib.Path(self.callibrationPressureController)
+            oldCal = pathlib.Path(path)
             age =  datetime.datetime.fromtimestamp( oldCal.stat().st_mtime, tz=datetime.timezone.utc)
             agestring = age.strftime(r'%Y%m%d')
             oldCal.rename( str(oldCal.absolute()) + "." + agestring )
@@ -423,7 +427,7 @@ class Pelve:
             return channel
         if not 1 <= channel <= 4:
             raise ValueError("Channel choice between 1 and 4")
-        return c_int32( int( channel ) ) # conv   ert to c_int32
+        return c_int32( int( channel ) ) # convert to c_int32
 
     def getPressureUniversal(self, channel):
         """This function gets the pressure, without bothering you with details about remote operation mode and stuff like that."""
