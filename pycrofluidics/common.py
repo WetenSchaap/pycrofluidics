@@ -1,21 +1,21 @@
 """
 Module containing functions and stuff different implemented devices and methods share, like the Elveflow error codes.
 """
-import pjmsflow
+import pycrofluidics
 import sys
 import platformdirs
 import pathlib
 import ruamel.yaml as yaml
 
 ERRORCODES = {
-    -8000 : 'No Digital Sensor found',
-    -8001 : 'No pressure sensor compatible with OB1 MK3',
-    -8002 : 'No Digital pressure sensor compatible with OB1 MK3',
-    -8003 : 'No Digital Flow sensor compatible with OB1 MK3',
-    -8004 : 'No IPA config for this sensor',
-    -8005 : 'Sensor not compatible with AF1',
-    -8006 : 'No Instrument with selected ID',
-    -8007 : 'ESI software seems to have connection with Device, close ESI before continuing in Python'
+    8000 : 'No Digital Sensor found',
+    8001 : 'No pressure sensor compatible with OB1 MK3',
+    8002 : 'No Digital pressure sensor compatible with OB1 MK3',
+    8003 : 'No Digital Flow sensor compatible with OB1 MK3',
+    8004 : 'No IPA config for this sensor',
+    8005 : 'Sensor not compatible with AF1',
+    8006 : 'No Instrument with selected ID',
+    8007 : 'ESI software seems to have connection with Device, close ESI before continuing in Python'
 }
 
 def read_config(key):
@@ -38,15 +38,15 @@ def raiseEFerror(error,action='Elveflow command'):
     if error == 0: 
         # This means no error
         return None
-    elif error in ERRORCODES.keys():
+    elif abs(error) in ERRORCODES.keys():
         # Known error
-        raise ConnectionError('{0} failed with errorcode {1} : {2}'.format(action,error,ERRORCODES[error]))
+        raise ConnectionError('{0} failed with errorcode {1} : {2}'.format(action,error,ERRORCODES[abs(error)]))
     else: 
         # Generic unknown error
         raise ConnectionError(f"{action} failed with errorcode {error} (not specified further)")
 
 def where_is_the_config_dir():
-    config_dir = pathlib.Path( platformdirs.user_config_dir(appname = pjmsflow.APPNAME, appauthor = pjmsflow.APPAUTHOR) )
+    config_dir = pathlib.Path( platformdirs.user_config_dir(appname = pycrofluidics.APPNAME, appauthor = pycrofluidics.APPAUTHOR) )
     config_dir.mkdir(parents=True,exist_ok=True)
     return config_dir
 
