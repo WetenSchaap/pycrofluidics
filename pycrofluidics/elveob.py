@@ -1,18 +1,21 @@
 import sys
 from ctypes import *
-from array import array
 import pathlib
 import datetime
 import json
 import pycrofluidics.common as common
 
-class Pelve:
+class OB1elve:
     '''
     Overarching class controlling Elveflow OB1-Mk4
     '''
-    def __init__( self, elveflowDLL = None, elveflowSDK = None, deviceName = None, deviceRegulators = [0,0,0,0] ):
+    def __init__( self, 
+                 elveflowDLL: str = None, 
+                 elveflowSDK: str = None,
+                 deviceName: str = None,
+                 deviceRegulators: list[int] = [0,0,0,0] ):
         """
-        Create Pelve device class.
+        Create OB1elve device class.
 
         Parameters
         ----------
@@ -93,21 +96,21 @@ class Pelve:
         import Elveflow64 as ef
         self.ef = ef
 
-    def loadCallibration(self,path = None):
+    def loadCallibration(self, path = None):
         """
         Load existing callibration for pressure channels. Loads from default calibration file, or optionally from user-supplied path.
 
         Parameters
         ----------
         path : str (path), optional
-            Path to callibration file (must be json!). Defaults to the standard callibration location, as given when creating this Pelve object.
+            Path to callibration file (must be json!). Defaults to the standard callibration location, as given when creating this OB1elve object.
         """
         if path is None:
             path = common.read_config("ob1_callibration")
         elif type(path) != str:
             raise TypeError("Give callibration file path as string")
         elif not pathlib.Path(path).exists():
-            raise ValueError(f"No callibration file found at '{path}', please set different path or perform callibration using Pelve.performCallibration()")
+            raise ValueError(f"No callibration file found at '{path}', please set different path or perform callibration using OB1elve.performCallibration()")
         self.calib = loadCalibration(path)
 
     def performCallibration(self,path = None):

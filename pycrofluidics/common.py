@@ -15,7 +15,8 @@ ERRORCODES = {
     8004 : 'No IPA config for this sensor',
     8005 : 'Sensor not compatible with AF1',
     8006 : 'No Instrument with selected ID',
-    8007 : 'ESI software seems to have connection with Device, close ESI before continuing in Python'
+    8007 : 'ESI software seems to have connection with Device, close ESI before continuing in Python',
+    2 : "Unknown error from stopping remote mode"
 }
 
 def read_config(key):
@@ -34,7 +35,7 @@ def add_elveflow_to_path():
     sys.path.append(read_config("elveflow_dll"))
     sys.path.append(read_config("elveflow_sdk"))
 
-def raiseEFerror(error,action='Elveflow command'):
+def raiseEFerror(error, action='Elveflow command'):
     if error == 0: 
         # This means no error
         return None
