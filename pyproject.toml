@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pycrofluidics"
-version = "0.1.0"
+version = "0.1.1"
 description = "Control Elveflow microfluidic components using (relatively) simple Python bindings"
 authors = ["Piet J.M. Swinkels"]
 readme = "readme.md"
