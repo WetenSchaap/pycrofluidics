@@ -11,7 +11,7 @@ class MUXelve:
     '''
     Overarching class controlling Elveflow MUX distributor 1/12
     '''
-    def __init__(self, elveflowDLL = None, elveflowSDK = None, deviceName = None):
+    def __init__(self, elveflowDLL:str = None, elveflowSDK:str = None, deviceName:str = None):
         """
         Create Pelve device class.
 
@@ -34,7 +34,7 @@ class MUXelve:
         self.ELVEFLOW_SDK = elveflowSDK
         self.loadDLL()
 
-    def open(self, auto_home = True, verbose = False):
+    def open(self, auto_home:bool = True, verbose:bool = False):
         """
         Open connection to MUX distributor. 
         
@@ -62,7 +62,7 @@ class MUXelve:
         error = self.ef.MUX_DRI_Destructor( self.Instr_ID )
         common.raiseEFerror(error,'Closing connection to MUX distributor')
 
-    def home( self, start_channel = 1 ):
+    def home( self, start_channel:int = 1 ):
         """
         Home the MUX. Needed before ever using it. Will return to position 1 by default. In this home function I wobble arround after to make sure it is set up correctly (not //always// the case.) This homing action is BLOCKING!
         
@@ -85,7 +85,7 @@ class MUXelve:
         self.set_valve(12, blocking = True)
         self.set_valve(start_channel, blocking = True)
 
-    def set_valve(self, valve_index, rotation_direction = 0, blocking = False):
+    def set_valve(self, valve_index:int, rotation_direction:int = 0, blocking:bool = False):
         """
         Move to inputted valve location. Will not do anything if you are allready at given location (build-in behaviour is to make a full lap for some reason).
 
@@ -116,7 +116,7 @@ class MUXelve:
             raise ConnectionError(f"Failed to set MUX to correct location: set to {valve_index}, but found at {self.get_valve()}")
         return valve_index
 
-    def get_valve(self):
+    def get_valve(self) -> int:
         """
         Get current position of valve. If 0 is returned, valve is currently busy!
         """
@@ -128,7 +128,7 @@ class MUXelve:
         common.raiseEFerror(error,f'gettting valve position of MUX')
         return int(valve.value)
     
-    def wait_for_valve_movement(self, timeout = 5):
+    def wait_for_valve_movement(self, timeout:float = 5):
         '''Block execution while valve is moving. Timeout is in seconds.'''
         current_valve = 0
         t0 = time.time()

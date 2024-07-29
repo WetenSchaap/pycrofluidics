@@ -10,7 +10,7 @@ class Pelve:
     '''
     Overarching class controlling Elveflow OB1-Mk4
     '''
-    def __init__( self, elveflowDLL = None, elveflowSDK = None, deviceName = None, deviceRegulators = [0,0,0,0] ):
+    def __init__( self, elveflowDLL:str = None, elveflowSDK:str = None, deviceName:str = None, deviceRegulators:list[int] = [0,0,0,0] ):
         """
         Create Pelve device class.
 
@@ -93,7 +93,7 @@ class Pelve:
         import Elveflow64 as ef
         self.ef = ef
 
-    def loadCallibration(self,path = None):
+    def loadCallibration(self, path:str = None):
         """
         Load existing callibration for pressure channels. Loads from default calibration file, or optionally from user-supplied path.
 
@@ -110,7 +110,7 @@ class Pelve:
             raise ValueError(f"No callibration file found at '{path}', please set different path or perform callibration using Pelve.performCallibration()")
         self.calib = loadCalibration(path)
 
-    def performCallibration(self,path = None):
+    def performCallibration(self, path:str = None):
         """
         Perform callibration of pressure channels, and save data for next time. If no path is supplied, the callibration will be saved to the default location. If a callibration data file allready exists (at the user-given location or the default), the original file will be renamed with creation date at the end as a backup.
 
@@ -141,7 +141,7 @@ class Pelve:
         saveCalibration(self.calib, path)
         print("New callibration was performed and saved.")
 
-    def setPressure(self,channel,pressure):
+    def setPressure(self, channel:int, pressure:float):
         """
         Set pressure goal in channel
 
@@ -159,7 +159,7 @@ class Pelve:
         error = self.ef.OB1_Set_Press( self.Instr_ID.value, channel, pressure, byref(self.calib),1000)
         common.raiseEFerror(error,'Setting pressure')
 
-    def getPressure(self,channel):
+    def getPressure(self, channel:int) -> float:
         """
         Read pressure at channel
 
@@ -176,7 +176,7 @@ class Pelve:
         common.raiseEFerror(error,'Getting pressure')
         return pressure.value
 
-    def setPressureBulk(self,pressures):
+    def setPressureBulk(self, pressures):
         """
         Set pressure of all channels in one go. If you want to set the pressure of 1 channel, use setPressure
 
@@ -202,9 +202,9 @@ class Pelve:
         error = self.ef.OB1_Set_All_Press( self.Instr_ID.value, byref(pressuresArray), byref(self.calib),4,1000)
         common.raiseEFerror(error,'Setting pressure')
 
-    def addSensor(self,channel,sensorType,resolution=7,sensorDig=1,sensorIPACalib=0,sensorCustVolt=5.01):
+    def addSensor(self, channel:int, sensorType:int, resolution:int = 7, sensorDig:int = 1,sensorIPACalib:int = 0, sensorCustVolt:float = 5.01):
         """
-        Add sensor to device. Note that I assume the sensor is digital, 
+        Add sensor to device. Note that I assume the sensor is digital.
 
         Parameters  
         ----------
@@ -240,7 +240,7 @@ class Pelve:
         error = self.ef.OB1_Add_Sens( self.Instr_ID.value, channel, sensorType, sensorDig, sensorIPACalib, resolution, sensorCustVolt) 
         common.raiseEFerror(error,'Connecting to sensor')
 
-    def getSensorData(self, channel):
+    def getSensorData(self, channel:int) -> float:
         """
         Get reading from sensor at channel, given in native units (so probably uL/min)
 
@@ -287,7 +287,7 @@ class Pelve:
         self.runningPIDs = [False,False,False,False]
         self.insideRemote = False
 
-    def remoteGetData(self,channel):
+    def remoteGetData(self,channel : int) -> tuple[float,float]:
         """
         Read data from pressure channel and sensor (if present and connected) while inside the remote operation mode.
 
@@ -312,7 +312,7 @@ class Pelve:
         common.raiseEFerror(error,"Getting data inside control loop")
         return dataP.value, dataS.value
         
-    def remoteSetTarget(self, channel, target):
+    def remoteSetTarget(self, channel: int, target: float):
         """
         Set the target value of a channel in the remote loop. If NO PID is running, the target is the pressure in mbar, if a PID IS running, this sets the target sensor value (probably uL/min), towards which the PID is working.
 
@@ -330,7 +330,7 @@ class Pelve:
         error = self.ef.OB1_Set_Remote_Target(self.Instr_ID.value, channel, target)
         common.raiseEFerror(error,"Set target pressure/flow rate inside control loop")
 
-    def remoteAddPID(self, channelP, channelS, P, I, run = True):
+    def remoteAddPID(self, channelP: int, channelS:int, P:float, I:float, run:bool = True):
         """
         Initialize a PID loop between a pressure channel and a sensor, with proportional parameter 'P' and integral parameter 'I'. 
         If you do not know what a PID loop is, ask the internet before messing around here.
@@ -363,19 +363,19 @@ class Pelve:
         self.confPIDs[int(channelP.value)] = {'P':P.value,'I':I.value}
         self.runningPIDs[int(channelP.value)] = bool(int(run.value))
 
-    def remotePausePID(self,channel):
+    def remotePausePID(self, channel:int):
         """Pause PID loop in channel"""
         run = False
         error = self._remoteStartstopPID(channel,run)
         common.raiseEFerror(error,"Pausing PID control loop")
 
-    def remoteStartPID(self,channel):
+    def remoteStartPID(self, channel:int):
         """Start PID loop in channel"""
         run = True
         error = self._remoteStartstopPID(channel,run)
         common.raiseEFerror(error,"Unpausing PID control loop")
     
-    def _remoteStartstopPID(self,channel,run):
+    def _remoteStartstopPID(self, channel:int, run:bool):
         """Start or stop PID control loop in channel"""
         channel = self._channelCheck(channel)
         if not type(self.confPIDs[int(channel.value)]) == dict:
@@ -385,7 +385,7 @@ class Pelve:
         self.runningPIDs[int(channel.value)] = bool(run.value)
         return error
 
-    def remoteResetPID(self,channel):
+    def remoteResetPID(self, channel: int):
         """Reset the PID loop in channel, start over, forgetting error, etc."""
         channel = self._channelCheck(channel)
         if not type(self.confPIDs[int(channel.value)]) == dict:
@@ -396,7 +396,7 @@ class Pelve:
         error = self.ef.PID_Set_Params_Remote( self.Instr_ID.value, channel, reset, P, I )
         common.raiseEFerror(error,"Reset PID control loop")
 
-    def remoteChangePID(self, channel, P, I, reset = True):
+    def remoteChangePID(self, channel:int, P:float, I:float, reset:bool = True):
         """
         Change PID parameters of the loop controlling the pressure in a channel.
 
@@ -422,7 +422,7 @@ class Pelve:
         self.confPIDs[int(channel.value)]["P"] = P.value
         self.confPIDs[int(channel.value)]["I"] = I.value
 
-    def _channelCheck(self,channel):
+    def _channelCheck(self, channel:int) -> c_int32:
         """Check whether inputed channel number is valid, and return c datatype version of number"""
         if type(channel) == c_int32:
             return channel
@@ -430,14 +430,14 @@ class Pelve:
             raise ValueError("Channel choice between 1 and 4")
         return c_int32( int( channel ) ) # convert to c_int32
 
-    def getPressureUniversal(self, channel):
+    def getPressureUniversal(self, channel:int) -> float:
         """This function gets the pressure, without bothering you with details about remote operation mode and stuff like that."""
         if self.insideRemote:
             return self.remoteGetData(channel)[0]
         else:
             return self.getPressure(channel)
     
-    def getFlowUniversal(self, channel):
+    def getFlowUniversal(self, channel:int) -> float:
         """This function gets the flow sensor readout in µl/min, without bothering you with details about remote operation mode and stuff like that."""
         if self.insideRemote:
             return self.remoteGetData(channel)[1]
@@ -452,9 +452,9 @@ class Pelve:
         #Exception handling here, if an error occurs in the with block
         self.close()
 
-def saveCalibration(calibrationData, location):
+def saveCalibration(calibrationData: list[c_double], location: str):
     """
-    Saves the inputted calibrationdata as plain text at location. Note that callibrationData should be a c_double datatype!
+    Saves the inputted calibrationdata as plain text at location. Note that callibrationData type should be a list of c_double!
     This native Python function replaces the Elveflow DLL function because that kept crashing for some reason.
     """
     try:
@@ -464,7 +464,7 @@ def saveCalibration(calibrationData, location):
     with open(location, "wt") as f:
         json.dump(calibrationData,f,indent='\t')
 
-def loadCalibration(location):
+def loadCalibration(location: str):
     """
     loads calibration data from plain text json file at location. Note that callibrationData needs to be generated with the saveCalibration function, not the Elveflow DLL function. Returns result as tuple of c_double!
     This native Python function replaces the Elveflow DLL function because that kept crashing for some reason.
