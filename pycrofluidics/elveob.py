@@ -77,7 +77,7 @@ class Pelve:
                 self.stopRemote() # Gracefully shut down, also if there is a control loop running.
             except ConnectionError as e:
                 # If not gracefull, force the issue
-                print('Remote process could not be stopped ({e}), but closing connection anyway.')
+                print(f'Remote process could not be stopped ({e}), but closing connection anyway.')
         error = self.ef.OB1_Destructor(self.Instr_ID)
         common.raiseEFerror(error,'Closing connection to OB1')
 
@@ -281,7 +281,8 @@ class Pelve:
         if not self.insideRemote:
             raise ValueError("Remote loop is not running and can thus not be stopped")
         error = self.ef.OB1_Stop_Remote_Measurement(self.Instr_ID.value)
-        common.raiseEFerror(error,"Stopping control loop")
+        if error != 2:
+            common.raiseEFerror(error,"Stopping control loop")
         self.confPIDs = [False,False,False,False] # Reset these values
         self.runningPIDs = [False,False,False,False]
         self.insideRemote = False
