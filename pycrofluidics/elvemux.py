@@ -29,6 +29,8 @@ class MUXelve:
         deviceName : str, optional
             Check readme on how to get this, requires external software (NI MAX). 
             Defaults to whatever is set in the config file.
+        deviceID : int, optional
+            If multiple devices are used, this ID can be set to select one of the entries for the deviceName in the config file.
         """
         if type(deviceName) != str and deviceName != None:
             raise TypeError("deviceName should be supplied as string or left at default")
@@ -57,13 +59,14 @@ class MUXelve:
         """
         if self.deviceName == None:
             if self.deviceID:
-                self.deviceName = common.read_config(f"mux{self.deviceID}_name")
+                self.deviceName = common.read_config(f"mux_{self.deviceID}_name")
             else:
                 self.deviceName = common.read_config("mux_name")
-
         self.Instr_ID = c_int32()
-        error = self.ef.MUX_DRI_Initialization(self.deviceName.encode('ascii'),
-                                               byref(self.Instr_ID))
+        error = self.ef.MUX_DRI_Initialization(
+            self.deviceName.encode('ascii'),
+            byref(self.Instr_ID)
+        )
         common.raiseEFerror(error,'Initialize connection to MUX distributor')
         if verbose:
             print(f"Error code: {error}, Instrument ID: {self.Instr_ID.value}")
@@ -85,13 +88,14 @@ class MUXelve:
             Before usage, device should always be homed. Set to True to do this automatically when object is created. By default True
         """
         Answer=(c_char*40)() # it needs to be able to give a generic reply, even if it is not used.
-        error = self.ef.MUX_DRI_Send_Command(self.Instr_ID.value,
-                                             0,
-                                             Answer,
-                                             40)
-         # length is set to 40 to contain the whole Serial Number, which is a possible answer.
+        error = self.ef.MUX_DRI_Send_Command(
+            self.Instr_ID.value,
+            0,
+            Answer,
+            40, # length is set to 40 to contain the whole Serial Number, which is a possible answer.
+        )
         common.raiseEFerror(error,'Homing MUX distributor')
-        self.wait_for_valve_movement( timeout=10 )
+        self.wait_for_valve_movement( timeout = 10 )
         self.set_valve(1, blocking = True)
         self.set_valve(12, blocking = True)
         self.set_valve(start_channel, blocking = True)
@@ -119,9 +123,11 @@ class MUXelve:
         if self.get_valve() == valve_index: # am allready there, bye.
             return valve_index
         valve_index_i32 = c_int32( valve_index ) #convert to c_int32
-        error = self.ef.MUX_DRI_Set_Valve(self.Instr_ID.value,
-                                          valve_index_i32,
-                                          rotation_direction)
+        error = self.ef.MUX_DRI_Set_Valve(
+            self.Instr_ID.value,
+            valve_index_i32,
+            rotation_direction
+        )
         common.raiseEFerror(error,f'Switching to MUX valve with index {valve_index}')
         if blocking:
             self.wait_for_valve_movement()
@@ -134,9 +140,10 @@ class MUXelve:
         Get current position of valve. If 0 is returned, valve is currently busy!
         """
         valve = c_int32( -1 ) # This will contain the valve later
-        error = self.ef.MUX_DRI_Get_Valve(self.Instr_ID.value,
-                                          byref(valve))
-        # Number 1-12. it returns 0 if valve is busy.
+        error = self.ef.MUX_DRI_Get_Valve(
+            self.Instr_ID.value,
+            byref(valve) # 1-12 for valves, and 0 if busy
+        ) 
         common.raiseEFerror(error,f'gettting valve position of MUX')
         return int(valve.value)
     

@@ -108,4 +108,20 @@ Probably, your device name changed. This happens when you plug the device into a
 
 > I have more than one of the same device. Can I still use this code
 
-Yes. You should supply the correct device name when creating the connection (e.g. ``pycrofluidics.Pelve(deviceName="ASRL3::INSTR")``) instead of relying on the config file. It should *just work*™ that way.
+Yes. You should supply the correct device name when creating the connection (e.g. ``pycrofluidics.Pelve(deviceName="ASRL3::INSTR")``) instead of relying on the config file. It should *just work*™ that way. You can also define multiple devices in the config files, like
+
+``` yaml
+ob1_1_name : ASRL3::INSTR
+ob1_2_name : ASRL7::INSTR
+mux_1_name : ASRL4::INSTR
+mux_2_name : ASRL5::INSTR
+ob1_1_callibration : /path/to/a/file/close/to/this/one
+ob1_2_callibration : /path/to/a/file/close/to/this/one
+```
+
+and supply the number as 'deviceID' when creating the connection:
+
+``` python
+mux_device_1 = MUXelve( deviceID = 1 )
+mux_device_2 = MUXelve( deviceID = 2 )
+```

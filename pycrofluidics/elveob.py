@@ -13,7 +13,8 @@ class OB1elve:
                  elveflowDLL: str = None, 
                  elveflowSDK: str = None,
                  deviceName: str = None,
-                 deviceRegulators: list[int] = [0,0,0,0] ):
+                 deviceRegulators: list[int] = [0,0,0,0],
+                 deviceID: int = None):
         """
         Create OB1elve device class.
 
@@ -30,10 +31,12 @@ class OB1elve:
         deviceName : str, optional
             Check readme on how to get this, requires external software (NI MAX). 
             Defaults to whatever is set in the config file.
-        deviceRegulators: list of 4 ints, optional
+        deviceRegulators : list[int], optional
             Select which regulators are installed in the OB1, numbers correspond to pressure ranges, 
             run printRegulatorTypes() to see what pressures correspond to what numbers.
             In Mk4 device, set all to 0. Defaults to [0,0,0,0].
+        deviceID : int, optional
+            If multiple devices are used, this ID can be set to select one of the entries for the deviceName in the config file.
         """
         if type(deviceName) != str and deviceName != None:
             raise TypeError("deviceName should be supplied as string or left at default")
@@ -60,6 +63,7 @@ class OB1elve:
         self.insideRemote = False
         self.confPIDs = [False,False,False,False]
         self.runningPIDs = [False,False,False,False]
+        self.deviceID = deviceID
         self.loadDLL()
 
     def open(self):
@@ -67,7 +71,11 @@ class OB1elve:
         Open connection with Elveflow device.
         """
         if self.deviceName == None:
-            self.deviceName = common.read_config("ob1_name")
+            if self.deviceID:
+                self.deviceName = common.read_config(f"ob1_{self.deviceID}_name")
+            else:
+                self.deviceName = common.read_config("ob1_name")
+
         self.Instr_ID = c_int32()
         error = self.ef.OB1_Initialization(
             self.deviceName.encode('ascii'),
@@ -114,7 +122,10 @@ class OB1elve:
             Path to callibration file (must be json!). Defaults to the standard callibration location, as given when creating this OB1elve object.
         """
         if path is None:
-            path = common.read_config("ob1_callibration")
+            if self.deviceID:
+                path = common.read_config(f"ob1_{self.deviceID}_callibration")
+            else:
+                path = common.read_config("ob1_callibration")
         elif type(path) != str:
             raise TypeError("Give callibration file path as string")
         elif not pathlib.Path(path).exists():
@@ -133,7 +144,10 @@ class OB1elve:
         if self.insideRemote:
             raise ValueError("Remote loop is running; only inside loop functions allowed!")
         if path is None:
-            path = common.read_config("ob1_callibration")
+            if self.deviceID:
+                path = common.read_config(f"ob1_{self.deviceID}_callibration")
+            else:
+                path = common.read_config("ob1_callibration")
         elif type(path) != str:
             raise TypeError("Give callibration file path as string")
         print("This will take ~5 minutes. Longer means kernel died. Make sure the channels are properly plugged.")
