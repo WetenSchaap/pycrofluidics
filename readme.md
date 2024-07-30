@@ -99,7 +99,6 @@ Replace ``[DEVICE]_name`` with the device names you discovered earlier. If you d
 
 Now you are ready to use this module!
 
-
 ## FAQ
 
 > I keep getting error "-8007" (ESI software seems to have connection with Device, close ESI before continuing in Python), but the ESI software is not open. What is going wrong?
@@ -108,7 +107,7 @@ Probably, your device name changed. This happens when you plug the device into a
 
 > I have more than one of the same device. Can I still use this code
 
-Yes. You should supply the correct device name when creating the connection (e.g. ``pycrofluidics.OB1elve(deviceName="ASRL3::INSTR")``) instead of relying on the config file. It should *just work*™ that way. You can also define multiple devices in the config files, like
+Yes. You should supply the correct device name when creating the connection (e.g. ``pycrofluidics.OB1elve(deviceName="ASRL3::INSTR")``) instead of relying on the config file. It should *just work*™ that way. You can also define multiple devices in the config files, like this:
 
 ``` yaml
 ob1_1_name : ASRL3::INSTR
@@ -122,6 +121,6 @@ ob1_2_callibration : /path/to/a/file/close/to/this/one
 and supply the number as 'deviceID' when creating the connection:
 
 ``` python
-mux_device_1 = MUXelve( deviceID = 1 )
-mux_device_2 = MUXelve( deviceID = 2 )
+mux_device_1 = MUXelve( deviceID = 1 ) # gets mux_1_name
+mux_device_2 = MUXelve( deviceID = 2 ) # gets mux_2_name
 ```
