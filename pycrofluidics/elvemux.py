@@ -43,7 +43,6 @@ class MUXelve:
         self.ELVEFLOW_SDK = elveflowSDK
         self.loadDLL()
 
-
     def open(self, 
              auto_home: bool = True,
              verbose: bool = False):
@@ -72,7 +71,6 @@ class MUXelve:
             print(f"Error code: {error}, Instrument ID: {self.Instr_ID.value}")
         if auto_home:
             self.home()
-    
 
     def close(self):
         error = self.ef.MUX_DRI_Destructor( self.Instr_ID )
@@ -99,7 +97,6 @@ class MUXelve:
         self.set_valve(1, blocking = True)
         self.set_valve(12, blocking = True)
         self.set_valve(start_channel, blocking = True)
-
 
     def set_valve(self, 
                   valve_index: int, 
@@ -146,7 +143,6 @@ class MUXelve:
         ) 
         common.raiseEFerror(error,f'gettting valve position of MUX')
         return int(valve.value)
-    
 
     def wait_for_valve_movement(self, timeout: float = 5):
         '''Block execution while valve is moving. Timeout is in seconds.'''
@@ -157,7 +153,6 @@ class MUXelve:
             if time.time() - t0 > timeout:
                 raise ConnectionError("Critical hardware error: valve movement has timed out")
         return True
-
 
     def loadDLL(self):
         """
@@ -171,13 +166,11 @@ class MUXelve:
         import Elveflow64 as ef
         self.ef = ef
 
-
     def __enter__(self, 
                   auto_home: bool = True,
                   verbose: bool = False):
         self.open( auto_home = auto_home, verbose = verbose)
         return self
-
 
     def __exit__(self, exception_type, exception_value, exception_traceback):
         #Exception handling here, if an error occurs in the with block
