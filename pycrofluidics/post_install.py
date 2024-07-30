@@ -1,6 +1,4 @@
 import pycrofluidics.common as common
-import pathlib
-import platformdirs
 import ruamel.yaml as yaml
 
 def main():

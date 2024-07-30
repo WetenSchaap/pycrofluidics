@@ -1,29 +1,39 @@
 import sys
 from ctypes import *
-from array import array
 import pathlib
 import datetime
 import json
 import pycrofluidics.common as common
 
-class Pelve:
+class OB1elve:
     '''
     Overarching class controlling Elveflow OB1-Mk4
     '''
-    def __init__( self, elveflowDLL:str = None, elveflowSDK:str = None, deviceName:str = None, deviceRegulators:list[int] = [0,0,0,0] ):
+    def __init__( self, 
+                 elveflowDLL: str = None, 
+                 elveflowSDK: str = None,
+                 deviceName: str = None,
+                 deviceRegulators: list[int] = [0,0,0,0] ):
         """
-        Create Pelve device class.
+        Create OB1elve device class.
 
         Parameters
         ----------
         elveflowDLL : str (path), optional
-            Path to the Elveflow DLL, which you have downloaded seperately. Defaults to whatever is set in the config file. Note that if you supply the DLL manually here, you //also// have to supply the SDK manually.
+            Path to the Elveflow DLL, which you have downloaded seperately. 
+            Defaults to whatever is set in the config file. 
+            Note that if you supply the DLL manually here, you //also// have to supply the SDK manually.
         elveflowSDK : str (path), optional
-            Path to the Elveflow SDK for python, which you have downloaded seperately. Defaults to whatever is set in the config file. Note that if you supply the SDK manually here, you //also// have to supply the DLL manually.
+            Path to the Elveflow SDK for python, which you have downloaded seperately. 
+            Defaults to whatever is set in the config file. 
+            Note that if you supply the SDK manually here, you //also// have to supply the DLL manually.
         deviceName : str, optional
-            Check readme on how to get this, requires external software (NI MAX). Defaults to whatever is set in the config file.
+            Check readme on how to get this, requires external software (NI MAX). 
+            Defaults to whatever is set in the config file.
         deviceRegulators: list of 4 ints, optional
-            Select which regulators are installed in the OB1, numbers correspond to pressure ranges, run printRegulatorTypes() to see what pressures correspond to what numbers. In Mk4 device, set all to 0. Defaults to [0,0,0,0].
+            Select which regulators are installed in the OB1, numbers correspond to pressure ranges, 
+            run printRegulatorTypes() to see what pressures correspond to what numbers.
+            In Mk4 device, set all to 0. Defaults to [0,0,0,0].
         """
         if type(deviceName) != str and deviceName != None:
             raise TypeError("deviceName should be supplied as string or left at default")
@@ -42,6 +52,7 @@ class Pelve:
         if any( [elveflowDLL!=None, elveflowSDK!= None] ):
             if ( not pathlib.Path(elveflowDLL).exists() ) or ( not pathlib.Path(elveflowSDK).exists() ):
                 raise FileNotFoundError("I could not find the given paths to the Elveflow DLL and/or Python SDK")
+            
         self.deviceName = deviceName
         self.deviceRegulators = deviceRegulators
         self.ELVEFLOW_DLL = elveflowDLL
@@ -100,14 +111,14 @@ class Pelve:
         Parameters
         ----------
         path : str (path), optional
-            Path to callibration file (must be json!). Defaults to the standard callibration location, as given when creating this Pelve object.
+            Path to callibration file (must be json!). Defaults to the standard callibration location, as given when creating this OB1elve object.
         """
         if path is None:
             path = common.read_config("ob1_callibration")
         elif type(path) != str:
             raise TypeError("Give callibration file path as string")
         elif not pathlib.Path(path).exists():
-            raise ValueError(f"No callibration file found at '{path}', please set different path or perform callibration using Pelve.performCallibration()")
+            raise ValueError(f"No callibration file found at '{path}', please set different path or perform callibration using OB1elve.performCallibration()")
         self.calib = loadCalibration(path)
 
     def performCallibration(self, path:str = None):
@@ -141,7 +152,9 @@ class Pelve:
         saveCalibration(self.calib, path)
         print("New callibration was performed and saved.")
 
-    def setPressure(self, channel:int, pressure:float):
+    def setPressure(self, 
+                    channel: int, 
+                    pressure: float = 0):
         """
         Set pressure goal in channel
 
@@ -176,7 +189,8 @@ class Pelve:
         common.raiseEFerror(error,'Getting pressure')
         return pressure.value
 
-    def setPressureBulk(self, pressures):
+    def setPressureBulk(self, 
+                        pressures: list[float] = [0, 0, 0, 0]):
         """
         Set pressure of all channels in one go. If you want to set the pressure of 1 channel, use setPressure
 

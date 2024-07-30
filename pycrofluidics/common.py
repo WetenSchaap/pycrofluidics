@@ -15,7 +15,8 @@ ERRORCODES = {
     8004 : 'No IPA config for this sensor',
     8005 : 'Sensor not compatible with AF1',
     8006 : 'No Instrument with selected ID',
-    8007 : 'ESI software seems to have connection with Device, close ESI before continuing in Python'
+    8007 : 'ESI software seems to have connection with Device, close ESI before continuing in Python',
+    2 : "Unknown error from stopping remote mode"
 }
 
 def read_config(key:str):
@@ -46,9 +47,9 @@ def raiseEFerror(error:int, action:str = 'Elveflow command'):
         # Generic unknown error
         raise ConnectionError(f"{action} failed with errorcode {error} (not specified further)")
 
-def where_is_the_config_dir() -> str:
-    """Return the path to the config directorz, containing config files, callibrations, etc."""
-    config_dir = pathlib.Path( platformdirs.user_config_dir(appname = pycrofluidics.APPNAME, appauthor = pycrofluidics.APPAUTHOR) )
+def where_is_the_config_dir():
+    config_dir = pathlib.Path( platformdirs.user_config_dir(appname = pycrofluidics.APPNAME, 
+                                                            appauthor = pycrofluidics.APPAUTHOR) )
     config_dir.mkdir(parents=True,exist_ok=True)
     return config_dir
 
