@@ -14,7 +14,7 @@ class MUXelve:
                  deviceName: str = None,
                  deviceID: int = None):
         """
-        Create Pelve device class.
+        Create MUX device class.
 
         Parameters
         ----------
