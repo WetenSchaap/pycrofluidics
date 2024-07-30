@@ -47,7 +47,8 @@ def raiseEFerror(error, action='Elveflow command'):
         raise ConnectionError(f"{action} failed with errorcode {error} (not specified further)")
 
 def where_is_the_config_dir():
-    config_dir = pathlib.Path( platformdirs.user_config_dir(appname = pycrofluidics.APPNAME, appauthor = pycrofluidics.APPAUTHOR) )
+    config_dir = pathlib.Path( platformdirs.user_config_dir(appname = pycrofluidics.APPNAME, 
+                                                            appauthor = pycrofluidics.APPAUTHOR) )
     config_dir.mkdir(parents=True,exist_ok=True)
     return config_dir
 

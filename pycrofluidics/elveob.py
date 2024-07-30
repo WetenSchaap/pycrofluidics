@@ -20,13 +20,20 @@ class OB1elve:
         Parameters
         ----------
         elveflowDLL : str (path), optional
-            Path to the Elveflow DLL, which you have downloaded seperately. Defaults to whatever is set in the config file. Note that if you supply the DLL manually here, you //also// have to supply the SDK manually.
+            Path to the Elveflow DLL, which you have downloaded seperately. 
+            Defaults to whatever is set in the config file. 
+            Note that if you supply the DLL manually here, you //also// have to supply the SDK manually.
         elveflowSDK : str (path), optional
-            Path to the Elveflow SDK for python, which you have downloaded seperately. Defaults to whatever is set in the config file. Note that if you supply the SDK manually here, you //also// have to supply the DLL manually.
+            Path to the Elveflow SDK for python, which you have downloaded seperately. 
+            Defaults to whatever is set in the config file. 
+            Note that if you supply the SDK manually here, you //also// have to supply the DLL manually.
         deviceName : str, optional
-            Check readme on how to get this, requires external software (NI MAX). Defaults to whatever is set in the config file.
+            Check readme on how to get this, requires external software (NI MAX). 
+            Defaults to whatever is set in the config file.
         deviceRegulators: list of 4 ints, optional
-            Select which regulators are installed in the OB1, numbers correspond to pressure ranges, run printRegulatorTypes() to see what pressures correspond to what numbers. In Mk4 device, set all to 0. Defaults to [0,0,0,0].
+            Select which regulators are installed in the OB1, numbers correspond to pressure ranges, 
+            run printRegulatorTypes() to see what pressures correspond to what numbers.
+            In Mk4 device, set all to 0. Defaults to [0,0,0,0].
         """
         if type(deviceName) != str and deviceName != None:
             raise TypeError("deviceName should be supplied as string or left at default")
@@ -45,6 +52,7 @@ class OB1elve:
         if any( [elveflowDLL!=None, elveflowSDK!= None] ):
             if ( not pathlib.Path(elveflowDLL).exists() ) or ( not pathlib.Path(elveflowSDK).exists() ):
                 raise FileNotFoundError("I could not find the given paths to the Elveflow DLL and/or Python SDK")
+            
         self.deviceName = deviceName
         self.deviceRegulators = deviceRegulators
         self.ELVEFLOW_DLL = elveflowDLL
