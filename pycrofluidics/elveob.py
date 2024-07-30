@@ -203,32 +203,32 @@ class OB1elve:
         common.raiseEFerror(error,'Getting pressure')
         return pressure.value
 
-    def setPressureBulk(self, 
-                        pressures: list[float] = [0, 0, 0, 0]):
-        """
-        Set pressure of all channels in one go. If you want to set the pressure of 1 channel, use setPressure
+    # def setPressureBulk(self, 
+    #                     pressures: list[float] = [0, 0, 0, 0]):
+    #     """
+    #     Set pressure of all channels in one go. If you want to set the pressure of 1 channel, use setPressure
 
-        WARNING: NOT FUNCTIONAL - Something goes wrong with ctypes here. The DLL expects a c_double, but I need to input 4 values. Not sure how to fix that. Giving one value will set only the first channel, sooooo. Ask stackOverflow or Elveflow (haha)?
+    #     WARNING: NOT FUNCTIONAL - Something goes wrong with ctypes here. The DLL expects a c_double, but I need to input 4 values. Not sure how to fix that. Giving one value will set only the first channel, sooooo. Ask stackOverflow or Elveflow (haha)?
 
-        Parameters
-        ----------
-        pressures : list-like
-            Pressure in mbar for each channel, with idx 0 being the first channel.
-        """
-        if self.insideRemote:
-            raise ValueError("Remote loop is running; only inside loop functions allowed!")
-        try: 
-            pressures = list(pressures)
-        except TypeError:
-            raise TypeError("input pressures must be list-like")
-        if len(pressures) != 4:
-            raise ValueError("Exactly 4 Pressures need to be given here")
-        pressuresArray = (c_double * len(pressures))(*pressures) # This magically converts data type
+    #     Parameters
+    #     ----------
+    #     pressures : list-like
+    #         Pressure in mbar for each channel, with idx 0 being the first channel.
+    #     """
+    #     if self.insideRemote:
+    #         raise ValueError("Remote loop is running; only inside loop functions allowed!")
+    #     try: 
+    #         pressures = list(pressures)
+    #     except TypeError:
+    #         raise TypeError("input pressures must be list-like")
+    #     if len(pressures) != 4:
+    #         raise ValueError("Exactly 4 Pressures need to be given here")
+    #     pressuresArray = (c_double * len(pressures))(*pressures) # This magically converts data type
         
-        firstArrayPoint = pressuresArray[0]
-        lenghtOfPressureArray = c_int(len(pressures))
-        error = self.ef.OB1_Set_All_Press( self.Instr_ID.value, byref(pressuresArray), byref(self.calib),4,1000)
-        common.raiseEFerror(error,'Setting pressure')
+    #     firstArrayPoint = pressuresArray[0]
+    #     lenghtOfPressureArray = c_int(len(pressures))
+    #     error = self.ef.OB1_Set_All_Press( self.Instr_ID.value, byref(pressuresArray), byref(self.calib),4,1000)
+        # common.raiseEFerror(error,'Setting pressure')
 
     def addSensor(self, channel:int, sensorType:int, resolution:int = 7, sensorDig:int = 1,sensorIPACalib:int = 0, sensorCustVolt:float = 5.01):
         """
