@@ -19,7 +19,7 @@ ERRORCODES = {
     2 : "Unknown error from stopping remote mode"
 }
 
-def read_config(key):
+def read_config(key:str):
     """
     Read value from config file
     """
@@ -35,7 +35,8 @@ def add_elveflow_to_path():
     sys.path.append(read_config("elveflow_dll"))
     sys.path.append(read_config("elveflow_sdk"))
 
-def raiseEFerror(error, action='Elveflow command'):
+def raiseEFerror(error:int, action:str = 'Elveflow command'):
+    """Raise an error with errorcode, and give the reason if it is known."""
     if error == 0: 
         # This means no error
         return None
@@ -52,7 +53,8 @@ def where_is_the_config_dir():
     config_dir.mkdir(parents=True,exist_ok=True)
     return config_dir
 
-def where_is_the_config_file():
+def where_is_the_config_file() -> str:
+    """Return the path to the config file, containing default config like device names."""
     config_dir = where_is_the_config_dir()
     config_file = config_dir / "config.yaml"
     if not config_file.exists():

@@ -75,7 +75,6 @@ class MUXelve:
         error = self.ef.MUX_DRI_Destructor( self.Instr_ID )
         common.raiseEFerror(error,'Closing connection to MUX distributor')
 
-
     def home( self, start_channel:int = 1 ):
         """
         Home the MUX. Needed before ever using it. Will return to position 1 by default. In this home function I wobble arround after to make sure it is set up correctly (not //always// the case.) This homing action is BLOCKING!
@@ -130,8 +129,7 @@ class MUXelve:
             raise ConnectionError(f"Failed to set MUX to correct location: set to {valve_index}, but found at {self.get_valve()}")
         return valve_index
 
-
-    def get_valve(self):
+    def get_valve(self) -> int:
         """
         Get current position of valve. If 0 is returned, valve is currently busy!
         """
