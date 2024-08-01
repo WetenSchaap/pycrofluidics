@@ -58,7 +58,10 @@ class MUXelve:
         """
         if self.deviceName == None:
             if self.deviceID:
-                self.deviceName = common.read_config(f"mux_{self.deviceID}_name")
+                try:
+                    self.deviceName = common.read_config(f"mux_{self.deviceID}_name")
+                except KeyError:
+                    raise KeyError(f"A device with deviceID {self.deviceID} was not found in the configfile. Manually create an entry named 'mux_{self.deviceID}_name' to use this deviceID")
             else:
                 self.deviceName = common.read_config("mux_name")
         self.Instr_ID = c_int32()

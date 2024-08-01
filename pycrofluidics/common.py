@@ -28,6 +28,20 @@ def read_config(key:str):
     config = yo.load(config_file)
     return config[key]
 
+def write_config(key:str, value:str):
+    """
+    Add key-value pair to config file.
+    """
+    assert type(key) == type(value) == str, 'Config key and values should always be strings'
+    config_file = where_is_the_config_file()
+    yo = yaml.YAML(typ='safe')
+    config = yo.load(config_file)
+    config[key] = value
+    # Force block style
+    yo.default_flow_style = False
+    yo.indent(mapping=2, sequence=4, offset=2)
+    yo.dump(config,config_file)
+
 def add_elveflow_to_path():
     """
     Add Elveflow SDK and DLL to path, based on config file.

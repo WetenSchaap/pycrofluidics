@@ -72,7 +72,10 @@ class OB1elve:
         """
         if self.deviceName == None:
             if self.deviceID:
-                self.deviceName = common.read_config(f"ob1_{self.deviceID}_name")
+                try:
+                    self.deviceName = common.read_config(f"ob1_{self.deviceID}_name")
+                except KeyError:
+                    raise KeyError(f"A device with deviceID {self.deviceID} was not found in the configfile. Manually create an entry named 'ob1_{self.deviceID}_name' to use this deviceID")
             else:
                 self.deviceName = common.read_config("ob1_name")
 
@@ -123,7 +126,10 @@ class OB1elve:
         """
         if path is None:
             if self.deviceID:
-                path = common.read_config(f"ob1_{self.deviceID}_callibration")
+                try:
+                    path = common.read_config(f"ob1_{self.deviceID}_callibration")
+                except KeyError:
+                    raise KeyError(f"No callibration file found for deviceID {self.deviceID}, please perform callibration using OB1elve.performCallibration().")
             else:
                 path = common.read_config("ob1_callibration")
         elif type(path) != str:
@@ -145,7 +151,12 @@ class OB1elve:
             raise ValueError("Remote loop is running; only inside loop functions allowed!")
         if path is None:
             if self.deviceID:
-                path = common.read_config(f"ob1_{self.deviceID}_callibration")
+                try:
+                    path = common.read_config(f"ob1_{self.deviceID}_callibration")
+                except KeyError:
+                    # Automatically choose path and add entry to config file
+                    path = common.where_is_the_config_dir() / f"ob1_{self.deviceID}_pressurechannel.callibration"
+                    common.write_config(f"ob1_{self.deviceID}_callibration", path.as_posix() )
             else:
                 path = common.read_config("ob1_callibration")
         elif type(path) != str:
