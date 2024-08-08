@@ -10,13 +10,13 @@ import pathlib
 import threading
 import pycrofluidics
 
-def injectVolume(pelve, muxelve, pressure_channel, flowrate_sensor_channel, inject_valve_channel, volume, stop_valve_channel = False, pressure = False, max_flow = 80, flow_rate = False, pollrate = 20):
+def injectVolume(ob1elve, muxelve, pressure_channel, flowrate_sensor_channel, inject_valve_channel, volume, stop_valve_channel = False, pressure = False, max_flow = 80, flow_rate = False, pollrate = 20):
     """
     Inject a specific volume into the chip using MUX. Do this at either fixed flowrate, fixed pressure or adaptive pressure. You can also use this as a threaded module and set the pressure/flow_rate externally, leaving this function to measure only (and switching off flow when volume has been injected.)
 
     parameters
     ----------
-    pelve : pelve object
+    ob1elve : ob1elve object
         object controlling ob1 pressure controller. I assume it is completely setup, and has sensors etc attached, connected, and set up. If you use flow-controlled option, make sure PID is allready setup.
     muxelve : muxelve object
         object controlling MUX distributor microfluidic switch
@@ -48,14 +48,14 @@ def injectVolume(pelve, muxelve, pressure_channel, flowrate_sensor_channel, inje
 
     # setup pressure etc
     if pressure:
-        pelve.setPressure(pressure_channel,pressure)
+        ob1elve.setPressure(pressure_channel,pressure)
     elif flow_rate:
-        pelve.remoteSetTarget(flowrate_sensor_channel,flow_rate)
+        ob1elve.remoteSetTarget(flowrate_sensor_channel,flow_rate)
     # setup MUX
     muxelve.set_valve(inject_valve_channel)
     while volume_injected < volume:
         ts = time.time()
-        flow = pelve.getFlowUniversal(flowrate_sensor_channel)
+        flow = ob1elve.getFlowUniversal(flowrate_sensor_channel)
         volume_injected += flow * (loop_time/60) # µl/min * ( 1 sec / 60 sec )
         if flow > max_flow: 
             # TODO: this depends on the flow sensor, and could be read out automatically probably... Fine for now
@@ -69,17 +69,17 @@ def injectVolume(pelve, muxelve, pressure_channel, flowrate_sensor_channel, inje
         muxelve.set_valve(stop_valve_channel)
     else:
         if pressure:
-            pelve.setPressure(pressure_channel,0)
+            ob1elve.setPressure(pressure_channel,0)
         elif flow_rate:
-            pelve.remoteSetTarget(flowrate_sensor_channel,0)
+            ob1elve.remoteSetTarget(flowrate_sensor_channel,0)
 
-def pressureSweep(pelveflow, channel, pressures, staticTime, acquisitionRate = 10, endAtZero = True):
+def pressureSweep(ob1elve, channel, pressures, staticTime, acquisitionRate = 10, endAtZero = True):
     """
     Perform a pressure sweep with a specific channel, and keep track of the flow rates and pressures of all channels during this sweep
 
     Parameters
     ----------
-    pelveflow : pjmsflow.Pelve
+    ob1elve : ob1elve object
         Object controlling Elveflow pressure controller
     channel : int
         Number of channel to sweep
@@ -99,23 +99,23 @@ def pressureSweep(pelveflow, channel, pressures, staticTime, acquisitionRate = 1
     """
     for i in range(len(pressures)):
         p = pressures[i]
-        pelveflow.setPressure(channel,p)
-        data = acquireData(pelveflow, acquisitionRate, staticTime)
+        ob1elve.setPressure(channel,p)
+        data = acquireData(ob1elve, acquisitionRate, staticTime)
         if i == 0:
             result = data.copy()
         else:
             result = pd.concat([result,data],ignore_index=True)
     if endAtZero:
-        pelveflow.setPressure(channel,0)
+        ob1elve.setPressure(channel,0)
     return result
 
-def acquireData(pelveflow, acquisitionRate=10, measureTime=60):
+def acquireData(ob1elve, acquisitionRate=10, measureTime=60):
     """
     Acquire data: passively read sensor data from Elveflow device, both pressures and flow rates (if sensors are connected).
 
     Parameters
     ----------
-    pelveflow : pjmsflow.Pelve
+    ob1elve : ob1elve object
         Object controlling Elveflow pressure controller
     acquisitionRate : float, optional
         How often to check sensors. Give in Hz, by default 10. Note that this is approximate, more a guideline, due to the request taking some (variable) time, and me not thinking this is particularily important to be very accurate.
@@ -140,14 +140,14 @@ def acquireData(pelveflow, acquisitionRate=10, measureTime=60):
             break
         for i in range(4):
             try:
-                p[i] =pelveflow.getPressure(i + 1)
+                p[i] =ob1elve.getPressure(i + 1)
             except ConnectionError:
                 # Log it as a NaN, warn the user, and continnue as to not lose data
                 warnings.warn(f"Pressure in channel {i+1} could not be read at least once.")
                 p[i] = np.nan
         for i in range(4):
             try:
-                s[i] =pelveflow.getSensorData(i + 1)
+                s[i] =ob1elve.getSensorData(i + 1)
             except ConnectionError:
                 # Log it as a NaN, warn the user, and continnue as to not lose data
                 warnings.warn(f"Flowrate in channel {i+1} could not be read at least once.")
@@ -169,7 +169,7 @@ def acquireData(pelveflow, acquisitionRate=10, measureTime=60):
     )
     return result
 
-def acquireDataCont(pelveflow, savePath, acquisitionRate=10, measureTime=60):
+def acquireDataCont(ob1elve, savePath, acquisitionRate=10, measureTime=60):
     # Like aquireData but with a continues writing to the savefile, so an error or something does not throw away the data.
     # WARNING: Sort of implicitly assumes 4 channels
     if type(savePath) == str:
@@ -195,14 +195,14 @@ def acquireDataCont(pelveflow, savePath, acquisitionRate=10, measureTime=60):
                 break
             for i in range(4):
                 try:
-                    p[i] =pelveflow.getPressure(i + 1)
+                    p[i] =ob1elve.getPressure(i + 1)
                 except ConnectionError:
                     # Log it as a NaN, warn the user, and continnue as to not lose data
                     warnings.warn(f"Pressure in channel {i+1} could not be read at least once.")
                     p[i] = np.nan
             for i in range(4):
                 try:
-                    s[i] =pelveflow.getSensorData(i + 1)
+                    s[i] =ob1elve.getSensorData(i + 1)
                 except ConnectionError:
                     # Log it as a NaN, warn the user, and continnue as to not lose data
                     warnings.warn(f"Flowrate in channel {i+1} could not be read at least once.")

@@ -13,7 +13,8 @@ class OB1elve:
                  elveflowDLL: str = None, 
                  elveflowSDK: str = None,
                  deviceName: str = None,
-                 deviceRegulators: list[int] = [0,0,0,0] ):
+                 deviceRegulators: list[int] = [0,0,0,0],
+                 deviceID: int = None):
         """
         Create OB1elve device class.
 
@@ -30,10 +31,12 @@ class OB1elve:
         deviceName : str, optional
             Check readme on how to get this, requires external software (NI MAX). 
             Defaults to whatever is set in the config file.
-        deviceRegulators: list of 4 ints, optional
+        deviceRegulators : list[int], optional
             Select which regulators are installed in the OB1, numbers correspond to pressure ranges, 
             run printRegulatorTypes() to see what pressures correspond to what numbers.
             In Mk4 device, set all to 0. Defaults to [0,0,0,0].
+        deviceID : int, optional
+            If multiple devices are used, this ID can be set to select one of the entries for the deviceName in the config file.
         """
         if type(deviceName) != str and deviceName != None:
             raise TypeError("deviceName should be supplied as string or left at default")
@@ -60,6 +63,7 @@ class OB1elve:
         self.insideRemote = False
         self.confPIDs = [False,False,False,False]
         self.runningPIDs = [False,False,False,False]
+        self.deviceID = deviceID
         self.loadDLL()
 
     def open(self):
@@ -67,7 +71,14 @@ class OB1elve:
         Open connection with Elveflow device.
         """
         if self.deviceName == None:
-            self.deviceName = common.read_config("ob1_name")
+            if self.deviceID:
+                try:
+                    self.deviceName = common.read_config(f"ob1_{self.deviceID}_name")
+                except KeyError:
+                    raise KeyError(f"A device with deviceID {self.deviceID} was not found in the configfile. Manually create an entry named 'ob1_{self.deviceID}_name' to use this deviceID")
+            else:
+                self.deviceName = common.read_config("ob1_name")
+
         self.Instr_ID = c_int32()
         error = self.ef.OB1_Initialization(
             self.deviceName.encode('ascii'),
@@ -114,7 +125,13 @@ class OB1elve:
             Path to callibration file (must be json!). Defaults to the standard callibration location, as given when creating this OB1elve object.
         """
         if path is None:
-            path = common.read_config("ob1_callibration")
+            if self.deviceID:
+                try:
+                    path = common.read_config(f"ob1_{self.deviceID}_callibration")
+                except KeyError:
+                    raise KeyError(f"No callibration file found for deviceID {self.deviceID}, please perform callibration using OB1elve.performCallibration().")
+            else:
+                path = common.read_config("ob1_callibration")
         elif type(path) != str:
             raise TypeError("Give callibration file path as string")
         elif not pathlib.Path(path).exists():
@@ -133,7 +150,15 @@ class OB1elve:
         if self.insideRemote:
             raise ValueError("Remote loop is running; only inside loop functions allowed!")
         if path is None:
-            path = common.read_config("ob1_callibration")
+            if self.deviceID:
+                try:
+                    path = common.read_config(f"ob1_{self.deviceID}_callibration")
+                except KeyError:
+                    # Automatically choose path and add entry to config file
+                    path = common.where_is_the_config_dir() / f"ob1_{self.deviceID}_pressurechannel.callibration"
+                    common.write_config(f"ob1_{self.deviceID}_callibration", path.as_posix() )
+            else:
+                path = common.read_config("ob1_callibration")
         elif type(path) != str:
             raise TypeError("Give callibration file path as string")
         print("This will take ~5 minutes. Longer means kernel died. Make sure the channels are properly plugged.")
@@ -189,32 +214,32 @@ class OB1elve:
         common.raiseEFerror(error,'Getting pressure')
         return pressure.value
 
-    def setPressureBulk(self, 
-                        pressures: list[float] = [0, 0, 0, 0]):
-        """
-        Set pressure of all channels in one go. If you want to set the pressure of 1 channel, use setPressure
+    # def setPressureBulk(self, 
+    #                     pressures: list[float] = [0, 0, 0, 0]):
+    #     """
+    #     Set pressure of all channels in one go. If you want to set the pressure of 1 channel, use setPressure
 
-        WARNING: NOT FUNCTIONAL - Something goes wrong with ctypes here. The DLL expects a c_double, but I need to input 4 values. Not sure how to fix that. Giving one value will set only the first channel, sooooo. Ask stackOverflow or Elveflow (haha)?
+    #     WARNING: NOT FUNCTIONAL - Something goes wrong with ctypes here. The DLL expects a c_double, but I need to input 4 values. Not sure how to fix that. Giving one value will set only the first channel, sooooo. Ask stackOverflow or Elveflow (haha)?
 
-        Parameters
-        ----------
-        pressures : list-like
-            Pressure in mbar for each channel, with idx 0 being the first channel.
-        """
-        if self.insideRemote:
-            raise ValueError("Remote loop is running; only inside loop functions allowed!")
-        try: 
-            pressures = list(pressures)
-        except TypeError:
-            raise TypeError("input pressures must be list-like")
-        if len(pressures) != 4:
-            raise ValueError("Exactly 4 Pressures need to be given here")
-        pressuresArray = (c_double * len(pressures))(*pressures) # This magically converts data type
+    #     Parameters
+    #     ----------
+    #     pressures : list-like
+    #         Pressure in mbar for each channel, with idx 0 being the first channel.
+    #     """
+    #     if self.insideRemote:
+    #         raise ValueError("Remote loop is running; only inside loop functions allowed!")
+    #     try: 
+    #         pressures = list(pressures)
+    #     except TypeError:
+    #         raise TypeError("input pressures must be list-like")
+    #     if len(pressures) != 4:
+    #         raise ValueError("Exactly 4 Pressures need to be given here")
+    #     pressuresArray = (c_double * len(pressures))(*pressures) # This magically converts data type
         
-        firstArrayPoint = pressuresArray[0]
-        lenghtOfPressureArray = c_int(len(pressures))
-        error = self.ef.OB1_Set_All_Press( self.Instr_ID.value, byref(pressuresArray), byref(self.calib),4,1000)
-        common.raiseEFerror(error,'Setting pressure')
+    #     firstArrayPoint = pressuresArray[0]
+    #     lenghtOfPressureArray = c_int(len(pressures))
+    #     error = self.ef.OB1_Set_All_Press( self.Instr_ID.value, byref(pressuresArray), byref(self.calib),4,1000)
+        # common.raiseEFerror(error,'Setting pressure')
 
     def addSensor(self, channel:int, sensorType:int, resolution:int = 7, sensorDig:int = 1,sensorIPACalib:int = 0, sensorCustVolt:float = 5.01):
         """

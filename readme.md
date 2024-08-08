@@ -21,8 +21,8 @@ The OB1 is a [pressure controller](https://www.elveflow.com/microfluidic-product
 
 ``` python
 import pycrofluidics as pf
-ob1 = pf.Pelve() 
-ob1.open() # device is now connected. You can also use a 'with' statement ("with pf.Pelve() as ob1:")
+ob1 = pf.OB1elve() 
+ob1.open() # device is now connected. You can also use a 'with' statement ("with pf.OB1elve() as ob1:")
 ob1.loadCallibration() # Load pressure callibration (you can perform pressure callibration using ob1.performCallibration(), follow the regular procedure for callibrationg the pressure channels)
 ob1.setPressure(channel = 1, pressure = 10) # sets pressure in channel 1 to 10 mbar
 ob1.getPressure(1) # gets current pressure in channel 1
@@ -99,13 +99,28 @@ Replace ``[DEVICE]_name`` with the device names you discovered earlier. If you d
 
 Now you are ready to use this module!
 
-
 ## FAQ
 
 > I keep getting error "-8007" (ESI software seems to have connection with Device, close ESI before continuing in Python), but the ESI software is not open. What is going wrong?
 
-Probably, your device name changed. This happens when you plug the device into a different USB port, and sometimes just randomly. Change the name of the device in the config file (you can see its location by running ``pycrofluidics.where_is_the_config_file()``). If this keeps happening, you can also supply the device name directly to the objects, e.g. ``pycrofluidics.Pelve(deviceName="ASRL3::INSTR")`` to override the default. So you don't have to keep changing the default values.
+Probably, your device name changed. This happens when you plug the device into a different USB port, and sometimes just randomly. Change the name of the device in the config file (you can see its location by running ``pycrofluidics.where_is_the_config_file()``). If this keeps happening, you can also supply the device name directly to the objects, e.g. ``pycrofluidics.OB1elve(deviceName="ASRL3::INSTR")`` to override the default. So you don't have to keep changing the default values.
 
 > I have more than one of the same device. Can I still use this code
 
-Yes. You should supply the correct device name when creating the connection (e.g. ``pycrofluidics.Pelve(deviceName="ASRL3::INSTR")``) instead of relying on the config file. It should *just work*™ that way.
+Yes. You should supply the correct device name when creating the connection (e.g. ``pycrofluidics.OB1elve(deviceName="ASRL3::INSTR")``) instead of relying on the config file. It should *just work*™ that way. You can also define multiple devices in the config files, like this:
+
+``` yaml
+ob1_1_name : ASRL3::INSTR
+ob1_2_name : ASRL7::INSTR
+mux_1_name : ASRL4::INSTR
+mux_2_name : ASRL5::INSTR
+ob1_1_callibration : /path/to/a/file/close/to/this/one
+ob1_2_callibration : /path/to/a/file/close/to/this/one
+```
+
+and supply the number as 'deviceID' when creating the connection:
+
+``` python
+mux_device_1 = MUXelve( deviceID = 1 ) # gets mux_1_name
+mux_device_2 = MUXelve( deviceID = 2 ) # gets mux_2_name
+```

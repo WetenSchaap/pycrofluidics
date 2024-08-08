@@ -14,7 +14,7 @@ class MUXelve:
                  deviceName: str = None,
                  deviceID: int = None):
         """
-        Create Pelve device class.
+        Create MUX device class.
 
         Parameters
         ----------
@@ -29,6 +29,8 @@ class MUXelve:
         deviceName : str, optional
             Check readme on how to get this, requires external software (NI MAX). 
             Defaults to whatever is set in the config file.
+        deviceID : int, optional
+            If multiple devices are used, this ID can be set to select one of the entries for the deviceName in the config file.
         """
         if type(deviceName) != str and deviceName != None:
             raise TypeError("deviceName should be supplied as string or left at default")
@@ -40,7 +42,6 @@ class MUXelve:
         self.ELVEFLOW_DLL = elveflowDLL
         self.ELVEFLOW_SDK = elveflowSDK
         self.loadDLL()
-
 
     def open(self, 
              auto_home: bool = True,
@@ -57,19 +58,22 @@ class MUXelve:
         """
         if self.deviceName == None:
             if self.deviceID:
-                self.deviceName = common.read_config(f"mux{self.deviceID}_name")
+                try:
+                    self.deviceName = common.read_config(f"mux_{self.deviceID}_name")
+                except KeyError:
+                    raise KeyError(f"A device with deviceID {self.deviceID} was not found in the configfile. Manually create an entry named 'mux_{self.deviceID}_name' to use this deviceID")
             else:
                 self.deviceName = common.read_config("mux_name")
-
         self.Instr_ID = c_int32()
-        error = self.ef.MUX_DRI_Initialization(self.deviceName.encode('ascii'),
-                                               byref(self.Instr_ID))
+        error = self.ef.MUX_DRI_Initialization(
+            self.deviceName.encode('ascii'),
+            byref(self.Instr_ID)
+        )
         common.raiseEFerror(error,'Initialize connection to MUX distributor')
         if verbose:
             print(f"Error code: {error}, Instrument ID: {self.Instr_ID.value}")
         if auto_home:
             self.home()
-    
 
     def close(self):
         error = self.ef.MUX_DRI_Destructor( self.Instr_ID )
@@ -85,17 +89,17 @@ class MUXelve:
             Before usage, device should always be homed. Set to True to do this automatically when object is created. By default True
         """
         Answer=(c_char*40)() # it needs to be able to give a generic reply, even if it is not used.
-        error = self.ef.MUX_DRI_Send_Command(self.Instr_ID.value,
-                                             0,
-                                             Answer,
-                                             40)
-         # length is set to 40 to contain the whole Serial Number, which is a possible answer.
+        error = self.ef.MUX_DRI_Send_Command(
+            self.Instr_ID.value,
+            0,
+            Answer,
+            40, # length is set to 40 to contain the whole Serial Number, which is a possible answer.
+        )
         common.raiseEFerror(error,'Homing MUX distributor')
-        self.wait_for_valve_movement( timeout=10 )
+        self.wait_for_valve_movement( timeout = 10 )
         self.set_valve(1, blocking = True)
         self.set_valve(12, blocking = True)
         self.set_valve(start_channel, blocking = True)
-
 
     def set_valve(self, 
                   valve_index: int, 
@@ -119,9 +123,11 @@ class MUXelve:
         if self.get_valve() == valve_index: # am allready there, bye.
             return valve_index
         valve_index_i32 = c_int32( valve_index ) #convert to c_int32
-        error = self.ef.MUX_DRI_Set_Valve(self.Instr_ID.value,
-                                          valve_index_i32,
-                                          rotation_direction)
+        error = self.ef.MUX_DRI_Set_Valve(
+            self.Instr_ID.value,
+            valve_index_i32,
+            rotation_direction
+        )
         common.raiseEFerror(error,f'Switching to MUX valve with index {valve_index}')
         if blocking:
             self.wait_for_valve_movement()
@@ -134,12 +140,12 @@ class MUXelve:
         Get current position of valve. If 0 is returned, valve is currently busy!
         """
         valve = c_int32( -1 ) # This will contain the valve later
-        error = self.ef.MUX_DRI_Get_Valve(self.Instr_ID.value,
-                                          byref(valve))
-        # Number 1-12. it returns 0 if valve is busy.
+        error = self.ef.MUX_DRI_Get_Valve(
+            self.Instr_ID.value,
+            byref(valve) # 1-12 for valves, and 0 if busy
+        ) 
         common.raiseEFerror(error,f'gettting valve position of MUX')
         return int(valve.value)
-    
 
     def wait_for_valve_movement(self, timeout: float = 5):
         '''Block execution while valve is moving. Timeout is in seconds.'''
@@ -150,7 +156,6 @@ class MUXelve:
             if time.time() - t0 > timeout:
                 raise ConnectionError("Critical hardware error: valve movement has timed out")
         return True
-
 
     def loadDLL(self):
         """
@@ -164,13 +169,11 @@ class MUXelve:
         import Elveflow64 as ef
         self.ef = ef
 
-
     def __enter__(self, 
                   auto_home: bool = True,
                   verbose: bool = False):
         self.open( auto_home = auto_home, verbose = verbose)
         return self
-
 
     def __exit__(self, exception_type, exception_value, exception_traceback):
         #Exception handling here, if an error occurs in the with block
