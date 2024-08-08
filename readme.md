@@ -27,7 +27,7 @@ ob1.loadCallibration() # Load pressure callibration (you can perform pressure ca
 ob1.setPressure(channel = 1, pressure = 10) # sets pressure in channel 1 to 10 mbar
 ob1.getPressure(1) # gets current pressure in channel 1
 # now lets add a digital flow sensor:
-ob1.addSensor(channel=1,sensorType=4,resolution=7,sensorDig=1,sensorIPACalib=0)
+ob1.addSensor(channel=1, sensorType=4, resolution=7, sensorDig=1, sensorIPACalib=0)
 # inputted values are: Channel at which sample is connected, the type of sensor (print options with pf.printSensorTypes()), the resolution of sensor (see pf.printSensorResolutions(), whether you are using a digital sensor, whether the sensor should use the IPA callibration.
 ob1.getSensorData(1) # get sensor data from channel 1 (obviously will not work if no sensor was added)
 
@@ -51,8 +51,8 @@ import pycrofluidics as pf
 mux = pf.MUXelve() 
 mux.open( home = True ) # device is now connected, and will home automatically. You can also use a 'with' statement (with pf.MUXelve() as mux: etc)
 mux.set_valve(2, blocking = True) # move to valve nr 2. Stops python code until it has arrived there
-mux.get_valve()  # gets current position (hopefully 2)
-mux.close() # always close mux before leaving, or you may not be able to reconnect without restarting/unplugging device. Use  'with' statement if possible.
+mux.get_valve() # gets current position (hopefully 2)
+mux.close() # always close mux before leaving, or you may not be able to reconnect without restarting/unplugging device. Use 'with' statement if possible.
 ```
 
 ### Protocols
@@ -61,7 +61,7 @@ The protocols submodule contains some (to me) useful shortcuts, like injecting a
 
 ## Installation
 
-Please be aware that you *cannot* use this module directly after installation, you will need to manually point to the SDK and DLL that elveflow provides when purchasing one of their devices. I assume your device is set-up otherwise. These steps need to be taken whether you use this module, or use the Elveflow-provided Python SDK directly. I only tested this with Elveflow SDK version 3.07.02, but this should be pretty universal. 
+Please be aware that you *cannot* use this module directly after installation, you will need to manually point to the SDK and DLL that elveflow provides when purchasing one of their devices. I assume your device is set-up otherwise. These steps need to be taken whether you use this module, or use the Elveflow-provided Python SDK directly. I only tested this with Elveflow SDK version 3.07.02, but this should be pretty universal.
 
 1. Download the Elveflow Microfluidic software and SDK [here](https://www.elveflow.com/microfluidic-products/microfluidics-software/elveflow-software-sdk/).
 2. Unzip the contents of the downloaded file and place them where you will not lose them (so probably not your "Downloads" folder).
@@ -105,7 +105,7 @@ Now you are ready to use this module!
 
 Probably, your device name changed. This happens when you plug the device into a different USB port, and sometimes just randomly. Change the name of the device in the config file (you can see its location by running ``pycrofluidics.where_is_the_config_file()``). If this keeps happening, you can also supply the device name directly to the objects, e.g. ``pycrofluidics.OB1elve(deviceName="ASRL3::INSTR")`` to override the default. So you don't have to keep changing the default values.
 
-> I have more than one of the same device. Can I still use this code
+> I have more than one of the same device. Can I still use this code?
 
 Yes. You should supply the correct device name when creating the connection (e.g. ``pycrofluidics.OB1elve(deviceName="ASRL3::INSTR")``) instead of relying on the config file. It should *just work*™ that way. You can also define multiple devices in the config files, like this:
 
