@@ -399,8 +399,8 @@ class OB1elve:
         sensorID = self.Instr_ID.value # this is never set??? Set to same ID as OB1???
         error= self.ef.PID_Add_Remote(self.Instr_ID.value, channelP, sensorID, channelS, P, I , run)
         common.raiseEFerror(error,"Setup PID control loop")
-        self.confPIDs[int(channelP.value)] = {'P':P.value,'I':I.value}
-        self.runningPIDs[int(channelP.value)] = bool(int(run.value))
+        self.confPIDs[int(channelP.value)-1] = {'P':P.value,'I':I.value}
+        self.runningPIDs[int(channelP.value)-1] = bool(int(run.value))
 
     def remotePausePID(self, channel:int):
         """Pause PID loop in channel"""
@@ -417,21 +417,21 @@ class OB1elve:
     def _remoteStartstopPID(self, channel:int, run:bool):
         """Start or stop PID control loop in channel"""
         channel = self._channelCheck(channel)
-        if not type(self.confPIDs[int(channel.value)]) == dict:
+        if not type(self.confPIDs[int(channel.value)-1]) == dict:
             raise ValueError("No PID setup in this channel")
         run = c_int32( int(run) )
         error = self.ef.PID_Set_Running_Remote( self.Instr_ID.value, channel, run )
-        self.runningPIDs[int(channel.value)] = bool(run.value)
+        self.runningPIDs[int(channel.value)-1] = bool(run.value)
         return error
 
     def remoteResetPID(self, channel: int):
         """Reset the PID loop in channel, start over, forgetting error, etc."""
         channel = self._channelCheck(channel)
-        if not type(self.confPIDs[int(channel.value)]) == dict:
+        if not type(self.confPIDs[int(channel.value)-1]) == dict:
             raise ValueError("No PID setup in this channel")
         reset = c_int32( int(True) )
-        P = c_double( self.confPIDs[int(channel.value)]["P"] )
-        I = c_double( self.confPIDs[int(channel.value)]["I"] )
+        P = c_double( self.confPIDs[int(channel.value)-1]["P"] )
+        I = c_double( self.confPIDs[int(channel.value)-1]["I"] )
         error = self.ef.PID_Set_Params_Remote( self.Instr_ID.value, channel, reset, P, I )
         common.raiseEFerror(error,"Reset PID control loop")
 
@@ -451,16 +451,16 @@ class OB1elve:
             Whether to reset PID error etc., by default True
         """
         channel = self._channelCheck(channel)
-        if not type(self.confPIDs[int(channel.value)]) == dict:
+        if not type(self.confPIDs[int(channel.value)-1]) == dict:
             raise ValueError("No PID setup in this channel")
         P = c_double( P )
         I = c_double( I )
         reset = c_int32( int(reset) )
         error = self.ef.PID_Set_Params_Remote( self.Instr_ID.value, channel, reset, P, I )
         common.raiseEFerror(error,"Changing PID control loop parameters")
-        self.confPIDs[int(channel.value)]["P"] = P.value
-        self.confPIDs[int(channel.value)]["I"] = I.value
-
+        self.confPIDs[int(channel.value)-1]["P"] = P.value
+        self.confPIDs[int(channel.value)-1]["I"] = I.value
+        
     def _channelCheck(self, channel:int) -> c_int32:
         """Check whether inputed channel number is valid, and return c datatype version of number"""
         if type(channel) == c_int32:
@@ -480,8 +480,10 @@ class OB1elve:
         """This function gets the flow sensor readout in µl/min, without bothering you with details about remote operation mode and stuff like that."""
         if self.insideRemote:
             return self.remoteGetData(channel)[1]
+        
         else:
-            return self.getSensorData(channel)
+            return self.getSensorData(channel)            
+
 
     def __enter__(self):
         self.open()
